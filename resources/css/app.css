@@ -1,0 +1,18 @@
+.container {
+    padding-bottom: 30px;
+}
+
+.content-list-button,
+.breadcrumb {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+#imageuploader-preview img {
+    width: 200px;
+}
+
+#imageuploader-preview img,
+#imageuploader-preview button {
+    vertical-align: middle;
+}
