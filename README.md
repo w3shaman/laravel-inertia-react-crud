@@ -10,6 +10,8 @@ This application is a simple backend for Content Management System. The content 
 * Publish  status
 * Publish date
 
+![](https://raw.githubusercontent.com/w3shaman/laravel-inertia-react-crud/master/screenshot.png)
+
 ## Installation
 
 Clone the repo locally:
