@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Database\Eloquent\Builder;
 
+// Load the Model.
 use App\Models\Content;
 
 class ContentController extends Controller {
@@ -54,18 +55,26 @@ class ContentController extends Controller {
         ]);
     }
 
+    /**
+     * Show form for add new content.
+     */
     public function add(Request $request) {
         return $this->formHandler($request);
     }
 
-    public function edit(Request $request, $id) {
-        return $this->formHandler($request, $id);
+    /**
+     * Show form for editting existing content.
+     * The Content Model is automatically injected from routes/web.php.
+     */
+    public function edit(Request $request, Content $content) {
+        return $this->formHandler($request, $content);
     }
 
-    public function delete(Request $request, $id) {
-        // Load content object from middleware.
-        $content = $request->get('ObjContent');
-
+    /**
+     * Show confirmation page for deleting existing content.
+     * The Content Model is automatically injected from routes/web.php.
+     */
+    public function delete(Request $request, Content $content) {
         if ($request->input('submit')) {
             // Delete the image first.
             if (Storage::disk('public')->exists($content->image)) {
@@ -85,7 +94,13 @@ class ContentController extends Controller {
         ]);
     }
 
-    private function formHandler(Request $request, $id = NULL) {
+    /**
+     * Form handler for displaying and handle saving for adding/editting content.
+     * The Content Model is NULL on add mode and automatically injected from routes/web.php
+     * on edit mode.
+     */
+    private function formHandler(Request $request, Content $content = NULL) {
+        // Check if there is submitted data.
         if ($request->input('submit')) {
             $request->validate([
                 'title' => 'required',
@@ -101,7 +116,9 @@ class ContentController extends Controller {
                 $ext = $image->extension();
             }
 
-            if ($id == NULL) {
+            // NULL Content Model is assumed as add mode.
+            if ($content == NULL) {
+                // So we need to create new instance.
                 $content = new Content();
 
                 $content->title = $request->input('title');
@@ -122,9 +139,7 @@ class ContentController extends Controller {
                 return redirect(route('content.add'))->with(['success' => 'New content has been added.']);
             }
             else {
-                // Load content object from middleware.
-                $content = $request->get('ObjContent');
-
+                // Update the injected Content Model object.
                 $content->title = $request->input('title');
                 $content->body = $request->input('body');
                 $content->publish = $request->input('publish');
@@ -152,12 +167,12 @@ class ContentController extends Controller {
             }
         }
 
-        if ($id === NULL) {
+        // On add mode, we show empty form.
+        if ($content === NULL) {
             return Inertia::render('Content/Edit');
         }
         else {
-            $content = Content::find($id);
-
+            // Otherwise, initialize the value for each field.
             return Inertia::render('Content/Edit',[
                 'content' => [
                     'id' => $content->id,
