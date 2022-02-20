@@ -93,7 +93,16 @@ class AppForm extends React.Component {
 
     submitForm(e) {
         e.preventDefault();
-        Inertia.post(this.props.submitUrl, this.state, {forceFormData: true});
+
+        var postData = this.state;
+        if (e.nativeEvent.submitter.id == 'save') {
+            postData['save_mode'] = 'save';
+        }
+        else {
+            postData['save_mode'] = 'save_continue';
+        }
+
+        Inertia.post(this.props.submitUrl, postData, {forceFormData: true});
     }
 
     render() {
@@ -166,9 +175,12 @@ class AppForm extends React.Component {
                         </div>
                     </div>
                     <br/>
-                    <div className="field">
+                    <div className="field is-grouped">
                         <div className="control">
-                            <button type="submit" className="button is-primary">Save</button>
+                            <button id="save" type="submit" className="button is-primary">Save</button>
+                        </div>
+                        <div className="control">
+                            <button id="save-continue" type="submit" className="button is-primary">{ `Save & ${this.props.content == undefined ? 'add next' : 'continue edit'}` }</button>
                         </div>
                     </div>
                 </form>

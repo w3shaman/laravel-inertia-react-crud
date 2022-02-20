@@ -136,7 +136,8 @@ class ContentController extends Controller {
                     $content->save();
                 }
 
-                return redirect(route('content.add'))->with(['success' => 'New content has been added.']);
+                // Define the success message.
+                $message = ['success' => 'New content has been added.'];
             }
             else {
                 // Update the injected Content Model object.
@@ -163,8 +164,19 @@ class ContentController extends Controller {
 
                 $content->save();
 
-                return redirect(route('content.index'))->with(['success' => 'Content has been updated.']);
+                // Define the success message.
+                $message = ['success' => 'Content has been updated.'];
             }
+
+            // Decide where the next URL will be. Back to index on stay in current form.
+            if ($request->input('save_mode') == 'save') {
+                $next_url = route('content.index');
+            }
+            else {
+                $next_url = url()->full();
+            }
+
+            return redirect($next_url)->with($message);
         }
 
         // On add mode, we show empty form.
