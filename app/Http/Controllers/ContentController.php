@@ -27,7 +27,7 @@ class ContentController extends Controller {
             Cookie::queue('keyword', $keyword, 1440);
         }
 
-        if ($keyword !== NULL && $keyword !== '') {
+        if ($keyword !== NULL) {
             // Explode into words.
             $arr_keywords = explode(' ', $keyword);
 
