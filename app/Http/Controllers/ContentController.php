@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Cookie;
-use Illuminate\Database\Eloquent\Builder;
 
 // Load the Model.
 use App\Models\Content;
@@ -24,26 +23,16 @@ class ContentController extends Controller {
         $keyword = $request->cookie('keyword');
         if ($request->input('search')) {
             $keyword = $request->input('keyword');
-            Cookie::queue('keyword', $keyword, 1440);
+
+            // Set cookie to expired if keyword is empty
+            $keyword == NULL
+                ? Cookie::expire('keyword')
+                : Cookie::queue('keyword', $keyword, 1440);
         }
 
         if ($keyword !== NULL) {
-            // Explode into words.
-            $arr_keywords = explode(' ', $keyword);
-
-            // Title must contain whole words.
-            $content = $content->orWhere(function (Builder $query) use ($arr_keywords){
-                foreach ($arr_keywords as $word) {
-                    $query = $query->where('title', 'LIKE', '%' . $word. '%');
-                }
-            });
-
-            // Body must contain whole words.
-            $content = $content->orWhere(function (Builder $query) use ($arr_keywords){
-                foreach ($arr_keywords as $word) {
-                    $query = $query->where('body', 'LIKE', '%' . $word. '%');
-                }
-            });
+            // Filter content by keyword
+            $content = $content->searchByKeyword($keyword);
         }
 
         $content = $content->orderBy('id', 'desc');

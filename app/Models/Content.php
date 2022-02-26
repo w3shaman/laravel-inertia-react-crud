@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 
 class Content extends Model {
     use HasFactory;
@@ -14,4 +15,28 @@ class Content extends Model {
      * @var string
      */
     protected $table = 'content';
+
+    /**
+     * Function for filtering content by keyword in its title and body.
+     */
+    public function searchByKeyword($keyword) {
+        // Explode into words.
+        $arr_keywords = explode(' ', $keyword);
+
+        // Title must contain whole words.
+        $content = $this->orWhere(function (Builder $query) use ($arr_keywords){
+            foreach ($arr_keywords as $word) {
+                $query = $query->where('title', 'LIKE', '%' . $word. '%');
+            }
+        });
+
+        // Body must contain whole words.
+        $content = $this->orWhere(function (Builder $query) use ($arr_keywords){
+            foreach ($arr_keywords as $word) {
+                $query = $query->where('body', 'LIKE', '%' . $word. '%');
+            }
+        });
+
+        return $content;
+    }
 }
