@@ -5,7 +5,6 @@ use App\Http\Controllers\Controller;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Cookie;
 
 // Load the Model.
@@ -14,35 +13,40 @@ use App\Models\Content;
 // Custom form request validation for handling add or update content.
 use App\Http\Requests\ContentRequest;
 
+// Content service class.
+use App\Services\ContentService;
+
 class ContentController extends Controller {
+    /**
+     * The content service for the detail CRUD process.
+     */
+    protected $contentService;
+
+    /**
+     * The controller constructor.
+     */
+    public function __construct(ContentService $content_service) {
+        $this->contentService = $content_service;
+    }
+
     /**
      * Show content list.
      *
      * @return \Illuminate\View\View
      */
     public function index(Request $request) {
-        $content = new Content();
+        // Check submitted search keyword.
+        $keyword =  $request->input('search')
+            ? $request->input('keyword')
+            : $request->cookie('keyword');
 
-        $keyword = $request->cookie('keyword');
-        if ($request->input('search')) {
-            $keyword = $request->input('keyword');
-
-            // Set cookie to expired if keyword is empty
-            $keyword == NULL
-                ? Cookie::expire('keyword')
-                : Cookie::queue('keyword', $keyword, 1440);
-        }
-
-        if ($keyword !== NULL) {
-            // Filter content by keyword
-            $content = $content->searchByKeyword($keyword);
-        }
-
-        $content = $content->orderBy('id', 'desc');
-        $content = $content->paginate(config('vars.pagination.items_per_page'));
+        // Set cookie to expired if keyword is empty.
+        $keyword == NULL
+            ? Cookie::expire('keyword')
+            : Cookie::queue('keyword', $keyword, 1440);
 
         return Inertia::render('Content/Index',[
-            'contents' => $content,
+            'contents' => $this->contentService->search($keyword), // Return the filtered content list.
             'keyword' => $keyword,
         ]);
     }
@@ -58,23 +62,14 @@ class ContentController extends Controller {
      * Handle new content submission.
      */
     public function addSubmit(ContentRequest $request) {
-        $content = new Content();
-
-        $content->title = $request->input('title');
-        $content->body = $request->input('body');
-        $content->publish = $request->input('publish');
-        $content->publish_date = $request->input('publish_date');
-
-        $content->save();
-
-        // Store uploaded image.
-        if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            $image_file = $image->storeAs('content/' . $content->created_at->format('Y/m'), 'img_' . $content->id . '.' . $image->extension(), 'public');
-
-            $content->image = $image_file;
-            $content->save();
-        }
+        // Save the new content using service.
+        $this->contentService->add(
+                $request->input('title'),
+                $request->input('body'),
+                $request->file('image'),
+                $request->input('publish'),
+                $request->input('publish_date')
+            );
 
         // Decide where the next URL will be. Back to index on stay in current form.
         if ($request->input('save_mode') == 'save') {
@@ -108,31 +103,16 @@ class ContentController extends Controller {
      * Handle new content submission.
      */
     public function editSubmit(ContentRequest $request, Content $content) {
-        // Update the injected Content Model object.
-        $content->title = $request->input('title');
-        $content->body = $request->input('body');
-        $content->publish = $request->input('publish');
-        $content->publish_date = $request->input('publish_date');
-
-        // Check if we should update the image.
-        if ($request->hasFile('image') || $request->input('remove_image')) {
-            // Delete existing image first.
-            if (Storage::disk('public')->exists($content->image)) {
-                Storage::disk('public')->delete($content->image);
-
-                $content->image = NULL;
-            }
-
-            // Re-upload image if uploaded.
-            if ($request->hasFile('image')) {
-                $image = $request->file('image');
-                $image_file = $image->storeAs('content/' . $content->created_at->format('Y/m'), 'img_' . $content->id . '.' . $image->extension(), 'public');
-
-                $content->image = $image_file;
-            }
-        }
-
-        $content->save();
+        // Update the content using service.
+        $this->contentService->update(
+                $content->id,
+                $request->input('title'),
+                $request->input('body'),
+                $request->file('image'),
+                $request->input('publish'),
+                $request->input('publish_date'),
+                $request->input('remove_image')
+            );
 
         // Decide where the next URL will be. Back to index on stay in current form.
         if ($request->input('save_mode') == 'save') {
@@ -162,12 +142,8 @@ class ContentController extends Controller {
      * Handle content deletion.
      */
     public function deleteSubmit(Request $request, Content $content) {
-        // Delete the image first.
-        if (Storage::disk('public')->exists($content->image)) {
-            Storage::disk('public')->delete($content->image);
-        }
-
-        $content->delete();
+        // Update the content using service.
+        $this->contentService->delete($content->id);
 
         return redirect(route('content.index'))->with(['success' => 'Content has been deleted.']);
     }
