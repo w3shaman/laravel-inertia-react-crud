@@ -126,22 +126,9 @@ class ContentController extends Controller {
     }
 
     /**
-     * Show confirmation page for deleting existing content.
-     * The Content Model is automatically injected from routes/web.php.
-     */
-    public function delete(Request $request, Content $content) {
-        return Inertia::render('Content/Delete',[
-            'content' => [
-                'id' => $content->id,
-                'title' => $content->title,
-            ],
-        ]);
-    }
-
-    /**
      * Handle content deletion.
      */
-    public function deleteSubmit(Request $request, Content $content) {
+    public function delete(Request $request, Content $content) {
         // Update the content using service.
         $this->contentService->delete($content->id);
 

@@ -2,6 +2,7 @@ import React from 'react';
 import { Inertia } from '@inertiajs/inertia';
 import { Link } from '@inertiajs/inertia-react';
 import AppHead from '../../Components/AppHead';
+import ConfirmDialog from '../../Components/ModalDialog';
 
 class Index extends React.Component {
     constructor(props) {
@@ -10,13 +11,17 @@ class Index extends React.Component {
         this.submitSearch = this.submitSearch.bind(this);
         this.clearSearch = this.clearSearch.bind(this);
         this.changeKeyword = this.changeKeyword.bind(this);
+        this.showDeleteConfirmation = this.showDeleteConfirmation.bind(this);
+        this.confirmDelete = this.confirmDelete.bind(this);
+        this.cancelDelete = this.cancelDelete.bind(this);
 
         this.state = {
             keyword: this.props.keyword === null ? '' : this.props.keyword,
             data: this.props.contents.data,
             data_count: this.props.contents.total,
             data_per_page: this.props.contents.per_page,
-            pager: this.props.contents.links
+            pager: this.props.contents.links,
+            show_delete_confirmation: false
         }
     }
 
@@ -43,6 +48,26 @@ class Index extends React.Component {
 
     changeKeyword(e) {
         this.setState({keyword: e.target.value});
+    }
+
+    showDeleteConfirmation(e, id, title) {
+        e.preventDefault();
+
+        this.setState({
+            show_delete_confirmation: true,
+            del_content_id: id,
+            del_content_title: title
+        });
+    }
+
+    confirmDelete(e) {
+        window.location.href = route('content.delete', this.state.del_content_id);
+    }
+
+    cancelDelete(e) {
+        e.preventDefault();
+
+        this.setState({show_delete_confirmation: false});
     }
 
     render() {
@@ -85,11 +110,20 @@ class Index extends React.Component {
                                 id={id}
                                 title={title}
                                 publish={publish}
-                                publish_date={publish_date} />
+                                publish_date={publish_date}
+                                onDelete={this.showDeleteConfirmation} />
                             )}
                         </tbody>
                     </table>
                 </div>
+                <ConfirmDialog
+                    id="delete-content-dialog"
+                    title="Delete Content"
+                    message={`Are you sure want to delete "${this.state.del_content_title}"?`}
+                    show={this.state.show_delete_confirmation}
+                    onConfirm={this.confirmDelete}
+                    onCancel={this.cancelDelete}
+                />
                 {this.state.data_count > this.state.data_per_page && <Pagination links={this.state.pager} />}
             </div>
         );
@@ -99,6 +133,14 @@ class Index extends React.Component {
 class TableRow extends React.Component {
     constructor(props) {
         super(props);
+
+        this.showDeleteConfirmation = this.showDeleteConfirmation.bind(this);
+    }
+
+    showDeleteConfirmation(e) {
+        if (this.props.onDelete !== undefined) {
+            this.props.onDelete(e, this.props.id, this.props.title);
+        }
     }
 
     render() {
@@ -111,7 +153,7 @@ class TableRow extends React.Component {
                     <Link href={route('content.edit', this.props.id)} className="button is-info">Edit</Link>
                 </td>
                 <td>
-                    <Link href={route('content.delete', this.props.id)} className="button is-danger">Delete</Link>
+                    <Link href="#" className="button is-danger" onClick={this.showDeleteConfirmation}>Delete</Link>
                 </td>
             </tr>
         );

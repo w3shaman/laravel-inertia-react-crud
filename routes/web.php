@@ -27,4 +27,3 @@ Route::post('/add', 'App\Http\Controllers\ContentController@addSubmit')->name('c
 Route::get('/edit/{content}', 'App\Http\Controllers\ContentController@edit')->name('content.edit');
 Route::post('/edit/{content}', 'App\Http\Controllers\ContentController@editSubmit')->name('content.edit.submit');
 Route::get('/delete/{content}', 'App\Http\Controllers\ContentController@delete')->name('content.delete');
-Route::post('/delete/{content}', 'App\Http\Controllers\ContentController@deleteSubmit')->name('content.delete.submit');
