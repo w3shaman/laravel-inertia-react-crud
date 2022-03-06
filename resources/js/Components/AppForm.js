@@ -6,6 +6,8 @@ import { Editor } from '@tinymce/tinymce-react';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
+import { ErrorDialog } from './ModalDialog';
+
 class AppForm extends React.Component {
     constructor(props) {
         super(props);
@@ -246,52 +248,6 @@ class ImageUploader extends React.Component {
                 <input className={this.props.className} type="file" id={this.props.id} ref={this.imageInput} onChange={this.handleChange} />
                 {this.state.image_preview !== null && <div id="imageuploader-preview"><img src={this.state.image_preview} /> <button type="button" onClick={this.handleRemove} className="button is-danger is-light">Remove Image</button></div>}
             </>
-        );
-    }
-}
-
-class ErrorDialog extends React.Component {
-    constructor(props) {
-        super(props);
-
-        this.close = this.close.bind(this);
-
-        this.state = {
-            show: this.props.show
-        };
-    }
-
-    close(e) {
-        this.setState({show: false});
-        if (this.props.onClose !== undefined) {
-            this.props.onClose(e);
-        }
-    }
-
-    componentDidUpdate(prevProps, prevState) {
-        if (this.props.show !== null && this.props.show !== prevProps.show) {
-            this.setState(function (state, props) {
-                return {show: props.show};
-            });
-        }
-    }
-
-    render() {
-        return (
-            <div className={this.state.show === true ? "modal is-active" : "modal"}>
-                <div className="modal-background"></div>
-                <div className="modal-card">
-                    <header className="modal-card-head">
-                        <p className="modal-card-title">{this.props.title}</p>
-                    </header>
-                    <section className="modal-card-body">
-                        {this.props.message}
-                    </section>
-                    <footer className="modal-card-foot">
-                        <a href="#" className="button is-danger" onClick={this.close}>OK</a>
-                    </footer>
-                </div>
-            </div>
         );
     }
 }

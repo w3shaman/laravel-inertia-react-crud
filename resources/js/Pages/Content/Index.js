@@ -2,7 +2,8 @@ import React from 'react';
 import { Inertia } from '@inertiajs/inertia';
 import { Link } from '@inertiajs/inertia-react';
 import AppHead from '../../Components/AppHead';
-import ConfirmDialog from '../../Components/ModalDialog';
+import { ConfirmDialog } from '../../Components/ModalDialog';
+import Pagination from '../../Components/Pagination';
 
 class Index extends React.Component {
     constructor(props) {
@@ -50,7 +51,7 @@ class Index extends React.Component {
         this.setState({keyword: e.target.value});
     }
 
-    showDeleteConfirmation(e, id, title) {
+    showDeleteConfirmation(id, title, e) {
         e.preventDefault();
 
         this.setState({
@@ -105,13 +106,17 @@ class Index extends React.Component {
                             </tr>
                         </thead>
                         <tbody>
-                            {this.state.data.length > 0 && this.state.data.map(({id, title, publish, publish_date}) => <TableRow
-                                key={id}
-                                id={id}
-                                title={title}
-                                publish={publish}
-                                publish_date={publish_date}
-                                onDelete={this.showDeleteConfirmation} />
+                            {this.state.data.length > 0 && this.state.data.map(({id, title, publish, publish_date}) => <tr key={id}>
+                                    <td>{title}</td>
+                                    <td>{publish}</td>
+                                    <td>{publish_date}</td>
+                                    <td>
+                                        <Link href={route('content.edit', id)} className="button is-info">Edit</Link>
+                                    </td>
+                                    <td>
+                                        <Link href="#" className="button is-danger" onClick={this.showDeleteConfirmation.bind(this, id, title)}>Delete</Link>
+                                    </td>
+                                </tr>
                             )}
                         </tbody>
                     </table>
@@ -125,61 +130,6 @@ class Index extends React.Component {
                     onCancel={this.cancelDelete}
                 />
                 {this.state.data_count > this.state.data_per_page && <Pagination links={this.state.pager} />}
-            </div>
-        );
-    }
-}
-
-class TableRow extends React.Component {
-    constructor(props) {
-        super(props);
-
-        this.showDeleteConfirmation = this.showDeleteConfirmation.bind(this);
-    }
-
-    showDeleteConfirmation(e) {
-        if (this.props.onDelete !== undefined) {
-            this.props.onDelete(e, this.props.id, this.props.title);
-        }
-    }
-
-    render() {
-        return (
-            <tr>
-                <td>{this.props.title}</td>
-                <td>{this.props.publish}</td>
-                <td>{this.props.publish_date}</td>
-                <td>
-                    <Link href={route('content.edit', this.props.id)} className="button is-info">Edit</Link>
-                </td>
-                <td>
-                    <Link href="#" className="button is-danger" onClick={this.showDeleteConfirmation}>Delete</Link>
-                </td>
-            </tr>
-        );
-    }
-}
-
-class Pagination extends React.Component {
-    constructor(props) {
-        super(props);
-    }
-
-    render() {
-        return (
-            <div>
-                <nav className="pagination" role="navigation" aria-label="pagination">
-                    <ul className="pagination-list">
-                        {this.props.links.length > 0 && this.props.links.map(({label, url, active}, index) =>
-                            <li key={index}>
-                                {active === true
-                                    ? <Link className="pagination-link is-current" href="#" dangerouslySetInnerHTML={{ __html: label }} />
-                                    : <Link className="pagination-link" href={url} dangerouslySetInnerHTML={{ __html: label }} />
-                                }
-                            </li>
-                        )}
-                    </ul>
-                </nav>
             </div>
         );
     }
