@@ -19,6 +19,7 @@ class ConfirmDialog extends React.Component {
     }
 
     onCancel(e) {
+        this.setState({show: false});
         if (this.props.onCancel !== undefined) {
             this.props.onCancel(e);
         }
