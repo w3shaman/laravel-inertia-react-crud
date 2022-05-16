@@ -23,15 +23,13 @@ class Content extends Model {
         // Explode into words.
         $arr_keywords = explode(' ', $keyword);
 
-        // Title must contain whole words.
-        $content = $this->orWhere(function (Builder $query) use ($arr_keywords){
+        // Title od body must contain whole words.
+        $content = $this->where(function (Builder $query) use ($arr_keywords){
             foreach ($arr_keywords as $word) {
                 $query = $query->where('title', 'LIKE', '%' . $word. '%');
             }
-        });
-
-        // Body must contain whole words.
-        $content = $this->orWhere(function (Builder $query) use ($arr_keywords){
+        })
+        ->orWhere(function (Builder $query) use ($arr_keywords){
             foreach ($arr_keywords as $word) {
                 $query = $query->where('body', 'LIKE', '%' . $word. '%');
             }
