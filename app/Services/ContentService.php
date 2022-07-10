@@ -31,7 +31,7 @@ class ContentService {
     public function search($keyword = NULL) {
         // Return the content list.
         return $this->content->searchByKeyword($keyword)
-                        ->orderBy('id', 'desc')
+                        ->orderBy('publish_date', 'desc')
                         ->paginate(config('vars.pagination.items_per_page'));
     }
 
