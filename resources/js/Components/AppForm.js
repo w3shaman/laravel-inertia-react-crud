@@ -12,7 +12,7 @@ class AppForm extends React.Component {
     constructor(props) {
         super(props);
 
-        this.MOMENT_FORMAT = 'YYYY-MM-DD hh:mm:ss';
+        this.MOMENT_FORMAT = 'YYYY-MM-DD HH:mm:ss';
 
         this.changeValue = this.changeValue.bind(this);
         this.changeBodyValue = this.changeBodyValue.bind(this);
