@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Inertia } from '@inertiajs/inertia';
 import moment from 'moment';
 import { Editor } from '@tinymce/tinymce-react';
@@ -191,65 +191,48 @@ class AppForm extends React.Component {
     }
 }
 
-class ImageUploader extends React.Component {
-    constructor(props) {
-        super(props);
+function ImageUploader(props) {
+    var imageInput = React.createRef();
 
-        this.imageInput = React.createRef();
-        this.clearValue = this.clearValue.bind(this);
-        this.handleChange = this.handleChange.bind(this);
-        this.handleRemove = this.handleRemove.bind(this);
+    const [image_preview, setImagePreview] = useState(props.defaultImage !== undefined && props.defaultImage !==null && props.defaultImage !=='' ? props.defaultImage : null);
 
-        if (this.props.defaultImage !== undefined && this.props.defaultImage !==null && this.props.defaultImage !=='') {
-            this.state = {
-                image_preview: this.props.defaultImage
-            };
-        }
-        else {
-            this.state = {
-                image_preview: null
-            };
-        }
+    const clearValue = function() {
+        setImagePreview(null);
+
+        imageInput.current.value = null;
     }
 
-    clearValue() {
-        this.setState({
-          image_preview: null,
-        })
-
-        this.imageInput.current.value = null;
-    }
-
-    handleChange(e) {
+    const handleChange = function(e) {
         var file = e.target.files[0];
         var type = file.type.split('/').pop().toLowerCase();
         if (type !== "jpeg" && type !== "jpg" && type !== "png" && type !== "bmp" && type !== "gif") {
-            if (this.props.onInvalidImage !== undefined) {
-                this.props.onInvalidImage(e);
+            if (props.onInvalidImage !== undefined) {
+                props.onInvalidImage(e);
             }
         }
         else {
-            this.setState({
-              image_preview: URL.createObjectURL(file),
-            });
+            setImagePreview(URL.createObjectURL(file));
         }
 
-        this.props.onChange(e);
+        if (props.onChange !== undefined) {
+            props.onChange(e);
+        }
     }
 
-    handleRemove(e) {
-        this.clearValue();
-        this.props.onRemove(e);
+    const handleRemove = function(e) {
+        clearValue();
+
+        if (props.onRemove !== undefined) {
+            props.onRemove(e);
+        }
     }
 
-    render() {
-        return (
-            <>
-                <input className={this.props.className} type="file" id={this.props.id} ref={this.imageInput} onChange={this.handleChange} />
-                {this.state.image_preview !== null && <div id="imageuploader-preview"><img src={this.state.image_preview} /> <button type="button" onClick={this.handleRemove} className="button is-danger is-light">Remove Image</button></div>}
-            </>
-        );
-    }
+    return (
+        <>
+            <input className={props.className} type="file" id={props.id} ref={imageInput} onChange={handleChange} />
+            {image_preview !== null && <div id="imageuploader-preview"><img src={image_preview} /> <button type="button" onClick={handleRemove} className="button is-danger is-light">Remove Image</button></div>}
+        </>
+    );
 }
 
 export default AppForm;
